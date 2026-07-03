@@ -1,0 +1,36 @@
+# Render Blueprint — one-click deploy of the Wisp demo server.
+#
+# In the Render dashboard: New + → "Blueprint" → pick this repo. Render reads
+# this file and provisions the service below. Free plan; caveats in the notes.
+services:
+  - type: web
+    name: wisp
+    runtime: node
+    plan: free
+    # Node 20+ (also pinned in .nvmrc). Keep in sync with the engines the code needs.
+    # Install dev tooling too — tsx runs the server and esbuild builds the widget,
+    # both of which live in devDependencies — then bundle the browser widget into
+    # apps/demo/public/wisp.js (that file is gitignored, so it must be built here).
+    buildCommand: npm ci --include=dev && npm run build:widget
+    startCommand: npm start
+    envVars:
+      # Stable HMAC secret for PoW challenges + session cookies. Render generates
+      # it once and keeps it, so sessions and in-flight challenges survive restarts.
+      # (Without this, config.ts falls back to a random-per-boot secret.)
+      - key: WISP_SECRET
+        generateValue: true
+      # WISP_ORIGIN and WISP_RP_ID are derived at runtime from Render's own
+      # RENDER_EXTERNAL_URL / RENDER_EXTERNAL_HOSTNAME (see config.ts), so the
+      # onrender.com URL never has to be hardcoded. To move to a custom domain
+      # later, add them explicitly here:
+      #   - key: WISP_ORIGIN
+      #     value: https://your.domain
+      #   - key: WISP_RP_ID
+      #     value: your.domain
+
+# Notes on the free plan:
+#  - The service sleeps after ~15 min idle; the first request after that takes
+#    ~30-50s to wake. Fine for a demo, noticeable for a first visitor.
+#  - The filesystem is ephemeral: FileStore's wisp-data.json is wiped on every
+#    redeploy/restart, so demo accounts reset. To make accounts persist, move to
+#    a host with a disk (e.g. Fly.io + a volume) or the planned SQLite adapter.

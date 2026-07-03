@@ -1,0 +1,10 @@
+node_modules/
+dist/
+wisp-data.json
+apps/demo/public/wisp.js
+_tmp
+.DS_Store
+
+# Internal working docs — kept on disk for development, never published.
+/CLAUDE.md
+/docs/

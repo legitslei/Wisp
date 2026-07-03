@@ -1,0 +1,32 @@
+{
+  "name": "wisp",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Anonymous, email-free accounts a real person can return to. Passkey-based, bot-filtered, honest about what it can't do.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build:widget": "esbuild packages/widget/src/index.ts --bundle --format=iife --global-name=Wisp --outfile=apps/demo/public/wisp.js",
+    "check": "npm run typecheck && npm run build:widget && npm run knip && npm run lint && npm test",
+    "dev": "npm run build:widget && tsx packages/server/src/index.ts",
+    "knip": "knip",
+    "lint": "biome check --write .",
+    "start": "tsx packages/server/src/index.ts",
+    "test": "node --import tsx --test packages/server/test/app.test.ts packages/server/test/code.test.ts packages/server/test/pow.test.ts packages/server/test/session.test.ts packages/server/test/store.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.1",
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.2",
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.24.2",
+    "knip": "^6.24.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

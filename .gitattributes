@@ -1,0 +1,3 @@
+# Biome formats text files with LF; without this, git's autocrlf checks out
+# CRLF on Windows and every `npm run check` "fixes" the same files forever.
+* text=auto eol=lf

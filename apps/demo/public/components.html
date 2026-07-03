@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wisp — component gallery</title>
+  <meta name="description" content="Every Wisp drop-in element, in every state — a zero-dependency storybook served by the demo server.">
+  <link rel="icon" type="image/png" href="/wisp-mark.png">
+  <link rel="apple-touch-icon" href="/wisp-mark.png">
+  <link rel="stylesheet" href="/global.css">
+  <style>
+    /* Design tokens (palette, radii, shadow) live in /global.css — shared with index.html. */
+    * { box-sizing: border-box; }
+    html { background: var(--paper); -webkit-font-smoothing: antialiased; }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 1rem; line-height: 1.6; color: var(--text);
+    }
+    .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+    .wrap { margin: 0 auto; max-width: 1080px; padding: 0 1.25rem; }
+
+    header.bar {
+      align-items: center; border-bottom: 1px solid var(--hair); display: flex;
+      flex-wrap: wrap; gap: 0.75rem; justify-content: space-between; padding: 0.9rem 1.25rem;
+    }
+    header.bar .title { color: var(--ink); font-weight: 600; }
+    header.bar .title span { color: var(--muted); font-weight: 400; }
+    header.bar nav { align-items: center; display: flex; gap: 1rem; }
+    a { color: var(--anchor); }
+    /* Theme toggle — mirrors the homepage's .btn-ghost icon button. */
+    .btn-ghost {
+      align-items: center; background: transparent; border: 1px solid transparent;
+      border-radius: var(--r-sm); color: var(--text); cursor: pointer; display: inline-flex;
+      font: inherit; height: 2.7rem; justify-content: center; padding: 0 0.7rem;
+      transition: transform 0.12s ease, color 0.16s;
+    }
+    .btn-ghost:hover { color: var(--ink); }
+    .btn-ghost:active { transform: translateY(1px) scale(0.99); }
+    .btn-ghost:focus-visible { outline: 2px solid var(--anchor); outline-offset: 2px; }
+    .icon {
+      fill: none; height: 1.2rem; stroke: currentColor; stroke-linecap: round;
+      stroke-width: 1.8; width: 1.2rem;
+    }
+    .icon-moon { display: none; }
+    [data-theme="dark"] .icon-sun { display: none; }
+    [data-theme="dark"] .icon-moon { display: inline; }
+
+    /* Mobile: theme icon pinned top-right next to the title; the nav row
+       below spreads back-link left, session chip right. */
+    @media (max-width: 640px) {
+      header.bar { position: relative; }
+      header.bar nav { justify-content: space-between; width: 100%; }
+      header.bar nav a { order: 1; }
+      header.bar nav wisp-status { order: 2; }
+      #theme-toggle { position: absolute; right: 0.5rem; top: 0.45rem; }
+    }
+
+    h1 { color: var(--ink); font-size: 1.9rem; line-height: 1.25; margin: 2.5rem 0 0.5rem; }
+    .lede { margin: 0 0 1rem; max-width: 60ch; }
+    h2 {
+      border-top: 1px solid var(--hair); color: var(--ink); font-size: 1.3rem;
+      margin: 3rem 0 0.25rem; padding-top: 2rem;
+    }
+    h2 code { font-size: 1.1rem; }
+    .section-desc { margin: 0 0 1.25rem; max-width: 70ch; }
+
+    .stories { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+    .story { min-width: 0; }
+    .story {
+      background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-md);
+      box-shadow: var(--shadow); display: flex; flex-direction: column; padding: 1.1rem 1.2rem;
+    }
+    .story.wide { grid-column: 1 / -1; }
+    .story h3 { color: var(--ink-2); font-size: 0.95rem; margin: 0 0 0.15rem; }
+    .story .note { font-size: 0.85rem; margin: 0 0 0.9rem; }
+    .story .frozen { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stage {
+      align-items: center; background: var(--raise); border: 1px dashed var(--hair-strong);
+      border-radius: var(--r-sm); display: flex; flex-wrap: wrap; gap: 0.75rem;
+      margin-bottom: 0.9rem; min-height: 4.5rem; padding: 1rem;
+      /* Default theming for every stage — same mapping the demo page uses. */
+      --wisp-accent: var(--anchor);
+      --wisp-accent-text: var(--on-anchor);
+      --wisp-border: var(--hair-strong);
+      --wisp-error: var(--red);
+      --wisp-radius: var(--r-sm);
+    }
+    pre.snippet {
+      background: var(--raise); border: 1px solid var(--hair); border-radius: var(--r-sm);
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.78rem;
+      line-height: 1.55; margin: auto 0 0; overflow-x: auto; padding: 0.7rem 0.9rem;
+    }
+
+    /* Theming stories */
+    .theme-pill { --wisp-accent: #e11d48; --wisp-accent-text: #fff; --wisp-radius: 999px; }
+    .theme-outline wisp-button::part(button) {
+      background: transparent; border: 2px solid var(--anchor); color: var(--anchor);
+      font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    }
+
+    #event-log {
+      background: var(--raise); border: 1px solid var(--hair); border-radius: var(--r-sm);
+      font-size: 0.78rem; margin: 0.5rem 0 3rem; max-height: 12rem; min-height: 3rem;
+      overflow: auto; padding: 0.7rem 0.9rem; white-space: pre-wrap;
+    }
+    footer { border-top: 1px solid var(--hair); color: var(--muted); font-size: 0.85rem;
+      margin-top: 3rem; padding: 1.5rem 0 2.5rem; }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <span class="title">Wisp <span>· component gallery</span></span>
+    <nav>
+      <wisp-status></wisp-status>
+      <a href="/">← back to the demo</a>
+      <button type="button" class="btn-ghost" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5" />
+          <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9L19 19M19 5l-2.1 2.1M7.1 16.9L5 19" />
+        </svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z" />
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <h1>Every element, every state</h1>
+    <p class="lede">
+      A zero-dependency storybook for Wisp's drop-in elements. <strong>Live</strong> stories talk
+      to this dev server for real — create accounts, sign out, watch the events land below.
+      <strong>Frozen</strong> stories are posed snapshots of internal states (busy, error,
+      the shown-once panel) so you can see them without triggering them.
+    </p>
+
+    <!-- ============================ wisp-button ========================== -->
+    <h2><code>&lt;wisp-button&gt;</code></h2>
+    <p class="section-desc">
+      One element, four actions. Handles its own busy state (<code>aria-busy</code>, disabled)
+      and shows failures inline. Emits <code>wisp-success</code> or <code>wisp-signout</code>.
+    </p>
+    <div class="stories">
+      <div class="story">
+        <h3>Live — all four actions</h3>
+        <p class="note">Default labels. Sign-up/sign-in open a real passkey prompt.</p>
+        <div class="stage">
+          <wisp-button action="signup"></wisp-button>
+          <wisp-button action="signin"></wisp-button>
+          <wisp-button action="guest"></wisp-button>
+          <wisp-button action="signout"></wisp-button>
+        </div>
+        <pre class="snippet">&lt;wisp-button action="signup"&gt;&lt;/wisp-button&gt;
+&lt;wisp-button action="signin"&gt;&lt;/wisp-button&gt;
+&lt;wisp-button action="guest"&gt;&lt;/wisp-button&gt;
+&lt;wisp-button action="signout"&gt;&lt;/wisp-button&gt;</pre>
+      </div>
+
+      <div class="story">
+        <h3>Custom label</h3>
+        <p class="note">The <code>label</code> attribute overrides the default text. Live.</p>
+        <div class="stage">
+          <wisp-button action="guest" label="Just let me in"></wisp-button>
+        </div>
+        <pre class="snippet">&lt;wisp-button action="guest"
+  label="Just let me in"&gt;&lt;/wisp-button&gt;</pre>
+      </div>
+
+      <div class="story">
+        <h3>Busy <span class="frozen">— frozen</span></h3>
+        <p class="note">While working: disabled, <code>aria-busy="true"</code>, wait cursor.</p>
+        <div class="stage" id="story-busy">
+          <wisp-button action="guest"></wisp-button>
+        </div>
+        <pre class="snippet">// while the ~1s puzzle solves:
+button.disabled = true
+button[aria-busy="true"]</pre>
+      </div>
+
+      <div class="story">
+        <h3>Error <span class="frozen">— frozen</span></h3>
+        <p class="note">Failures render inline in an <code>aria-live</code> region and mirror as a <code>wisp-error</code> event.</p>
+        <div class="stage" id="story-error">
+          <wisp-button action="signin"></wisp-button>
+        </div>
+        <pre class="snippet">addEventListener("wisp-error", (e) =&gt; {
+  // e.detail.message
+});</pre>
+      </div>
+
+      <div class="story">
+        <h3>Unknown action</h3>
+        <p class="note">A typo fails loudly and safely — disabled, named, no network calls.</p>
+        <div class="stage">
+          <wisp-button action="teleport"></wisp-button>
+        </div>
+        <pre class="snippet">&lt;wisp-button action="teleport"&gt;
+  → "wisp-button: unknown action"</pre>
+      </div>
+    </div>
+
+    <!-- ========================== wisp-code-signup ======================= -->
+    <h2><code>&lt;wisp-code-signup&gt;</code></h2>
+    <p class="section-desc">
+      Creates a code account and handles the shown-once moment: reveal panel, copy button,
+      explicit "I saved it" dismissal. The create button hides itself after success so a
+      second click can't mint a second account.
+    </p>
+    <div class="stories">
+      <div class="story">
+        <h3>Live</h3>
+        <p class="note">Creates a real account on this dev server and reveals its code once.</p>
+        <div class="stage">
+          <wisp-code-signup></wisp-code-signup>
+        </div>
+        <pre class="snippet">&lt;wisp-code-signup&gt;&lt;/wisp-code-signup&gt;</pre>
+      </div>
+
+      <div class="story">
+        <h3>Reveal panel <span class="frozen">— frozen</span></h3>
+        <p class="note">What the user sees after success (sample code, not a real account).</p>
+        <div class="stage" id="story-reveal">
+          <wisp-code-signup></wisp-code-signup>
+        </div>
+        <pre class="snippet">// e.detail on wisp-success:
+{ userId, confidence: "bot-filtered",
+  code: "wisp-…" } // only here, only once</pre>
+      </div>
+    </div>
+
+    <!-- ========================== wisp-code-signin ======================= -->
+    <h2><code>&lt;wisp-code-signin&gt;</code></h2>
+    <p class="section-desc">
+      A real form: paste field + submit, Enter key works, input is labelled for screen
+      readers. Pasted codes are normalized server-side (case, whitespace), so mangled
+      pastes still land.
+    </p>
+    <div class="stories">
+      <div class="story">
+        <h3>Live</h3>
+        <p class="note">Paste a code from the story above — it signs in for real.</p>
+        <div class="stage">
+          <wisp-code-signin></wisp-code-signin>
+        </div>
+        <pre class="snippet">&lt;wisp-code-signin&gt;&lt;/wisp-code-signin&gt;</pre>
+      </div>
+
+      <div class="story">
+        <h3>Error <span class="frozen">— frozen</span></h3>
+        <p class="note">Wrong or malformed codes fail inline; the field keeps focus flow.</p>
+        <div class="stage" id="story-code-error">
+          <wisp-code-signin></wisp-code-signin>
+        </div>
+        <pre class="snippet">// server replies 400:
+"unknown code" / "malformed code"</pre>
+      </div>
+    </div>
+
+    <!-- ============================ wisp-status ========================== -->
+    <h2><code>&lt;wisp-status&gt;</code></h2>
+    <p class="section-desc">
+      A live session chip. Checks the session on load and refreshes itself whenever any
+      Wisp element signs in or out — the one in this page's header is doing that right now.
+      Shows the honest confidence label, never more.
+    </p>
+    <div class="stories">
+      <div class="story">
+        <h3>Live</h3>
+        <p class="note">Try the guest button above and watch both chips update.</p>
+        <div class="stage">
+          <wisp-status></wisp-status>
+        </div>
+        <pre class="snippet">&lt;wisp-status&gt;&lt;/wisp-status&gt;
+  → "signed out"
+  → "signed in · bot-filtered"</pre>
+      </div>
+    </div>
+
+    <!-- ============================= Theming ============================= -->
+    <h2>Theming</h2>
+    <p class="section-desc">
+      Elements ship unstyled-but-decent and take the host page's brand two ways:
+      CSS custom properties for the quick pass, <code>::part()</code> for full control.
+      Every stage on this page already maps <code>--wisp-*</code> to the page palette —
+      including dark mode, which the theme toggle above proves.
+    </p>
+    <div class="stories">
+      <div class="story">
+        <h3>CSS variables</h3>
+        <p class="note">Accent, text, border, error color, radius.</p>
+        <div class="stage theme-pill">
+          <wisp-button action="guest" label="Pill button"></wisp-button>
+        </div>
+        <pre class="snippet">.mine {
+  --wisp-accent: #e11d48;
+  --wisp-accent-text: #fff;
+  --wisp-radius: 999px;
+}</pre>
+      </div>
+
+      <div class="story">
+        <h3>::part() override</h3>
+        <p class="note">Restyle any internal piece: <code>button</code>, <code>input</code>, <code>panel</code>, <code>code</code>, <code>chip</code>, <code>error</code>.</p>
+        <div class="stage theme-outline">
+          <wisp-button action="guest" label="Outline button"></wisp-button>
+        </div>
+        <pre class="snippet">wisp-button::part(button) {
+  background: transparent;
+  border: 2px solid var(--brand);
+  text-transform: uppercase;
+}</pre>
+      </div>
+    </div>
+
+    <!-- ============================ Event log ============================ -->
+    <h2>Events</h2>
+    <p class="section-desc">
+      Everything above reports through three bubbling events — this log listens at
+      <code>window</code> level, exactly like an integrating page would.
+    </p>
+    <pre id="event-log" class="mono">Waiting for events — click any live story…</pre>
+
+    <footer>
+      Wisp — anonymous, email-free accounts. This gallery is plain HTML served by the demo
+      server; view source to see everything. <a href="/">Demo &amp; docs</a>
+    </footer>
+  </main>
+
+  <script src="/wisp.js"></script>
+  <script>
+    /* ------------------------------- Theme ------------------------------ */
+    const THEME_KEY = "wisp-theme"; // shared with the demo page
+    const applyTheme = (theme) => { document.documentElement.dataset.theme = theme; };
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    applyTheme(savedTheme ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+    document.querySelector("#theme-toggle").onclick = () => {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(next);
+      localStorage.setItem(THEME_KEY, next);
+    };
+
+    /* ----------------------------- Event log ---------------------------- */
+    const log = document.querySelector("#event-log");
+    const logLines = [];
+    function logEvent(name, detail) {
+      const time = new Date().toLocaleTimeString();
+      logLines.push(`${time}  ${name}  ${detail ? JSON.stringify(detail) : ""}`);
+      log.textContent = logLines.slice(-12).join("\n");
+      log.scrollTop = log.scrollHeight;
+    }
+    addEventListener("wisp-success", (e) => logEvent("wisp-success", e.detail));
+    addEventListener("wisp-error", (e) => logEvent("wisp-error", e.detail));
+    addEventListener("wisp-signout", () => logEvent("wisp-signout"));
+
+    /* --------------------------- Frozen stories ------------------------- */
+    /* Pose internal states by reaching into the (open) shadow roots after
+       the elements upgrade. Frozen stages are display-only. */
+    customElements.whenDefined("wisp-button").then(() => {
+      const busy = document.querySelector("#story-busy wisp-button").shadowRoot;
+      const busyButton = busy.querySelector("button");
+      busyButton.textContent = "Working…";
+      busyButton.disabled = true;
+      busyButton.setAttribute("aria-busy", "true");
+
+      const errored = document.querySelector("#story-error wisp-button").shadowRoot;
+      errored.querySelector(".error").textContent =
+        "The operation either timed out or was not allowed.";
+    });
+
+    customElements.whenDefined("wisp-code-signup").then(() => {
+      const reveal = document.querySelector("#story-reveal wisp-code-signup").shadowRoot;
+      reveal.querySelector("button").hidden = true;
+      reveal.querySelector("code").textContent = "wisp-h7km-q2xw-9dfp-t3ns-ye4a-rr6z";
+      reveal.querySelector(".panel").hidden = false;
+      reveal.querySelector(".done").disabled = true; // keep the pose on display
+    });
+
+    customElements.whenDefined("wisp-code-signin").then(() => {
+      const coded = document.querySelector("#story-code-error wisp-code-signin").shadowRoot;
+      coded.querySelector("input").value = "wisp-aaaa-aaaa-aaaa-aaaa-aaaa-aaaa";
+      coded.querySelector(".error").textContent = "unknown code";
+    });
+  </script>
+</body>
+</html>

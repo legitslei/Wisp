@@ -1,0 +1,111 @@
+/* ========================================================================
+   Wisp demo — shared design tokens for the demo pages (index.html and
+   components.html). Light is canonical; [data-theme="dark"] overrides.
+
+   "Trace" — a wisp is presence defined by absence. The whole design
+   spends its boldness in one place: the record the server keeps is tiny,
+   and we render that literally. Ink is grayscale; the single "anchor"
+   accent (blue) is reserved for the two things that actually persist (the
+   id and the key/hash) plus focus. Type personality comes from a hard-styled
+   system display face set against a monospace "data voice".
+   ======================================================================== */
+
+/* Onest — self-hosted variable font (100–900 in one file). Kept local on
+   purpose: a privacy-first project shouldn't ship its demo fonts from a
+   third-party CDN that would see the visitor's IP. */
+@font-face {
+  font-family: "Onest";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/onest-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Onest";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/onest-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* Type — the display/text face; mono "data voice" stays per-page. */
+  --font-sans: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Surfaces */
+  --paper: #f3f5f8;
+  --surface: #ffffff;
+  --raise: #fbfcfd;
+  /* Ink / text */
+  --ink: #0a0d14;
+  --ink-2: #2c3340;
+  --text: #464d5c;
+  --muted: #7c8494;
+  /* Hairlines */
+  --hair: #e3e7ee;
+  --hair-strong: #cfd5df;
+  /* Accent — "anchor": the one color that marks what persists + focus. */
+  --anchor: #2563eb;
+  --anchor-soft: rgba(37, 99, 235, 0.09);
+  --anchor-glow: rgba(37, 99, 235, 0.16);
+  --on-anchor: #ffffff;
+  /* Status */
+  --red: #c62727;
+  --green: #12813f;
+  --online: #16a34a;
+  --amber: #d97706;
+  --amber-soft: rgba(217, 119, 6, 0.09);
+  /* Radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  /* Shadow */
+  --shadow: 0 1px 2px rgb(10 13 20 / 0.04), 0 12px 32px -12px rgb(10 13 20 / 0.14);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* Surfaces */
+  --paper: #08090e;
+  --surface: #10121a;
+  --raise: #14161f;
+  /* Ink / text */
+  --ink: #f0f2f8;
+  --ink-2: #cfd3df;
+  --text: #b0b6c4;
+  --muted: #6d7484;
+  /* Hairlines */
+  --hair: #20232d;
+  --hair-strong: #2c3040;
+  /* Accent — "anchor": the one color that marks what persists + focus. */
+  --anchor: #6ea8ff;
+  --anchor-soft: rgba(110, 168, 255, 0.12);
+  --anchor-glow: rgba(110, 168, 255, 0.22);
+  --on-anchor: #0a0b12;
+  /* Status */
+  --red: #ff7676;
+  --green: #46d986;
+  --online: #34d97b;
+  --amber: #f5a838;
+  --amber-soft: rgba(245, 168, 56, 0.12);
+  /* Shadow */
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 18px 44px -16px rgb(0 0 0 / 0.66);
+  color-scheme: dark;
+}
+
+/* Titles cap at semibold globally — no bold headings. Pages may set a lower
+   weight, but this is the ceiling. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
