@@ -146,6 +146,9 @@ test("POST /api/login/options with solved proof-of-work issues a flow", async ()
   const body = await readJson(res);
   assert.equal(typeof body.flowId, "string");
   assert.equal(typeof prop(body.options, "challenge"), "string");
+  // Soft preference for the built-in authenticator — a refactor that drops it
+  // would silently revert browsers to offering roaming provider apps first.
+  assert.deepEqual(prop(body.options, "hints"), ["client-device"]);
 });
 
 test("POST /api/login/verify with an unknown flowId is rejected", async () => {
@@ -160,6 +163,17 @@ test("POST /api/register/options without proof-of-work is rejected", async () =>
   const res = await app.request("/api/register/options", { method: "POST" });
   assert.equal(res.status, 400);
   assert.equal((await readJson(res)).error, "proof-of-work failed");
+});
+
+test("POST /api/register/options with solved proof-of-work issues a flow", async () => {
+  const app = createApp(createMemoryStore());
+  const res = await postJson(app, "/api/register/options", await solvedPow(app));
+  assert.equal(res.status, 200);
+  const body = await readJson(res);
+  assert.equal(typeof body.flowId, "string");
+  assert.equal(typeof prop(body.options, "challenge"), "string");
+  // Same soft built-in-authenticator preference as login/options.
+  assert.deepEqual(prop(body.options, "hints"), ["client-device"]);
 });
 
 test("register/verify rejects bad credentials without leaking internals", async () => {
