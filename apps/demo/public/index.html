@@ -770,7 +770,7 @@ npm run dev
 
           <div class="dev-card">
             <h3><span class="n mono">05</span> Self-host configuration</h3>
-            <p class="method-desc">All server config is environment variables. Set <code>WISP_SECRET</code> in production, or sessions reset on every restart.</p>
+            <p class="method-desc">All server config is environment variables. Set <code>WISP_SECRET</code> in production, or sessions reset on every restart. <strong>Serve over HTTPS in production</strong> — account codes and session cookies travel over the wire, and only HTTPS keeps them from being read in transit.</p>
             <div class="table-scroll">
               <table>
                 <thead>
