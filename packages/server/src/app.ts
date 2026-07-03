@@ -128,6 +128,15 @@ export function createApp(store: Store): Hono {
         userVerification: "preferred",
       },
     });
+    // Prefer the built-in device authenticator (Windows Hello, iCloud Keychain,
+    // Android) over roaming provider apps like Microsoft Authenticator. Set the
+    // raw WebAuthn hint on the returned options rather than the library's
+    // `preferredAuthenticatorType` helper — that helper also pins
+    // authenticatorAttachment: "platform", which would block phone-by-QR and
+    // security-key registration and narrow the "wherever it syncs" promise.
+    // Soft preference only: users can still pick "more options", and browsers
+    // without hints support ignore it.
+    options.hints = ["client-device"];
 
     const flowId = rememberChallenge(options.challenge);
     if (!flowId) return c.json({ error: "server busy, try again shortly" }, 503);
@@ -238,6 +247,10 @@ export function createApp(store: Store): Hono {
       userVerification: "preferred",
       // No allowCredentials: the browser offers whatever passkey it holds.
     });
+    // Same soft hint as registration — prefer the built-in device authenticator
+    // first. See /api/register/options for why it's set here, not via the
+    // library's attachment-pinning helper.
+    options.hints = ["client-device"];
     const flowId = rememberChallenge(options.challenge);
     if (!flowId) return c.json({ error: "server busy, try again shortly" }, 503);
     return c.json({ flowId, options });
